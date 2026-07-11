@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import {
   Terminal,
   Copy,
@@ -11,26 +12,28 @@ import {
   ArrowRight,
   Menu,
   X,
-  Route,
+  Route as RouteIcon,
   FileJson,
   Send,
-  BookOpen,
   Github,
+  Mail,
   ChevronRight,
 } from "lucide-react";
+import ChangelogPage from "./ChangelogPage.jsx";
+import DocsPage from "./DocsPage.jsx";
 
 /* -------------------------------------------------------------------------
- * Mockless — Landing page (v2)
- * Sections: Navbar · Hero · ProductExplainer · HowItWorks ·
- *           InteractiveWidget · Benefits · Integrations · Pricing ·
- *           FAQ · FinalCTA · Footer
- * Split 1:1 into their own files if wiring this into a real project.
+ * Mockless — Landing page (v3)
+ * Routes: "/" landing · "/docs" · "/changelog"
+ * Landing sections: Navbar · Hero · ProductExplainer · HowItWorks ·
+ *   InteractiveWidget · Benefits · Integrations · Pricing · FAQ ·
+ *   FinalCTA · Footer
  * ---------------------------------------------------------------------- */
 
 const BASE_HOST = "mockless.dev/api";
 
 /* -------------------------------------------------------------------------
- * Navbar.jsx — blurs/solidifies on scroll, Docs is emphasized
+ * Navbar.jsx — Docs is now plain text, matching the rest of the nav
  * ---------------------------------------------------------------------- */
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -49,24 +52,20 @@ function Navbar() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-purple-500">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-orange-500">
             <Terminal className="h-4 w-4 text-white" strokeWidth={2.5} />
           </div>
           <span className="text-[15px] font-semibold tracking-tight text-white">Mockless</span>
-        </div>
+        </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
           <a href="#features" className="text-[13.5px] font-medium text-zinc-400 transition-colors hover:text-white">
             Features
           </a>
-          <a
-            href="#docs"
-            className="flex items-center gap-1 text-[13.5px] font-semibold text-zinc-200 transition-colors hover:text-white"
-          >
-            <BookOpen className="h-3.5 w-3.5 text-purple-400" />
+          <Link to="/docs" className="text-[13.5px] font-medium text-zinc-400 transition-colors hover:text-white">
             Docs
-          </a>
+          </Link>
           <a href="#pricing" className="text-[13.5px] font-medium text-zinc-400 transition-colors hover:text-white">
             Pricing
           </a>
@@ -78,7 +77,7 @@ function Navbar() {
           </a>
           <a
             href="#get-started"
-            className="rounded-lg bg-purple-500 px-4 py-2 text-[13.5px] font-medium text-white shadow-[0_0_0_0_rgba(168,85,247,0.5)] transition-all hover:bg-purple-400 hover:shadow-[0_0_20px_2px_rgba(168,85,247,0.35)]"
+            className="rounded-lg bg-orange-500 px-4 py-2 text-[13.5px] font-medium text-white transition-all hover:bg-orange-400 hover:shadow-[0_0_20px_2px_rgba(255,107,0,0.35)]"
           >
             Get started free
           </a>
@@ -93,10 +92,10 @@ function Navbar() {
         <div className="border-t border-zinc-800 bg-zinc-950 px-6 py-4 md:hidden">
           <div className="flex flex-col gap-4">
             <a href="#features" className="text-[14px] text-zinc-400">Features</a>
-            <a href="#docs" className="text-[14px] font-semibold text-white">Docs</a>
+            <Link to="/docs" className="text-[14px] text-zinc-400">Docs</Link>
             <a href="#pricing" className="text-[14px] text-zinc-400">Pricing</a>
             <a href="#signin" className="text-[14px] text-zinc-400">Sign in</a>
-            <a href="#get-started" className="rounded-lg bg-purple-500 px-4 py-2 text-center text-[14px] font-medium text-white">
+            <a href="#get-started" className="rounded-lg bg-orange-500 px-4 py-2 text-center text-[14px] font-medium text-white">
               Get started free
             </a>
           </div>
@@ -107,7 +106,51 @@ function Navbar() {
 }
 
 /* -------------------------------------------------------------------------
- * Hero.jsx — new headline/copy, floating badge, gradient blob, mouse glow
+ * HeroVisual.jsx — decorative glassmorphic layered card, the "visual anchor"
+ * ---------------------------------------------------------------------- */
+function HeroVisual() {
+  return (
+    <div className="relative mx-auto mt-14 h-64 w-full max-w-lg sm:h-72">
+      {/* back card — terminal preview, offset behind */}
+      <div className="absolute right-0 top-6 w-[85%] -rotate-2 rounded-xl border border-white/10 bg-white/5 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl sm:w-[80%]">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-red-500/70" />
+          <span className="h-2 w-2 rounded-full bg-amber-500/70" />
+          <span className="h-2 w-2 rounded-full bg-emerald-500/70" />
+          <span className="ml-2 font-mono text-[10.5px] text-zinc-500">terminal</span>
+        </div>
+        <p className="mt-3 font-mono text-[11.5px] leading-6 text-zinc-500">
+          $ curl -i mockless.dev/api/v1/users
+        </p>
+        <p className="mt-1 font-mono text-[11.5px] leading-6">
+          <span className="text-orange-400">HTTP/1.1 200</span>
+          <span className="text-zinc-500"> OK</span>
+        </p>
+        <p className="font-mono text-[11.5px] leading-6 text-zinc-300">{`{ "status": "success" }`}</p>
+      </div>
+
+      {/* front card — config editor, foreground */}
+      <div className="absolute left-0 bottom-2 w-[85%] rotate-1 rounded-xl border border-orange-500/30 bg-zinc-950/80 p-4 shadow-2xl shadow-black/60 backdrop-blur-xl sm:w-[80%]">
+        <div className="flex items-center justify-between">
+          <span className="rounded bg-orange-500/10 px-1.5 py-0.5 font-mono text-[10.5px] font-bold text-orange-400">
+            GET
+          </span>
+          <span className="font-mono text-[10.5px] text-zinc-600">deployed</span>
+        </div>
+        <p className="mt-2.5 font-mono text-[11.5px] text-zinc-300">/api/v1/users</p>
+        <div className="mt-3 space-y-1.5 border-t border-white/5 pt-2.5 font-mono text-[11px] text-zinc-500">
+          <p>{`{`}</p>
+          <p className="pl-3 text-zinc-400">"id": <span className="text-orange-300">1</span>,</p>
+          <p className="pl-3 text-zinc-400">"name": <span className="text-emerald-300">"Ada Lovelace"</span></p>
+          <p>{`}`}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------
+ * Hero.jsx — banner removed, glow/grid background, bolder headline, visual anchor
  * ---------------------------------------------------------------------- */
 function Hero() {
   const containerRef = useRef(null);
@@ -127,30 +170,28 @@ function Hero() {
       onMouseMove={handleMouseMove}
       className="relative overflow-hidden px-6 pb-16 pt-28 text-center"
     >
-      {/* slow-drifting gradient blob */}
+      {/* glow beams + faint grid, fading via radial mask */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-20 bg-hero-grid" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-hero-glow" />
+      {/* slow-drifting ambient blob */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-24 -z-10 h-72 w-72 -translate-x-1/2 rounded-full bg-purple-600/20 blur-3xl animate-slow-drift"
+        className="pointer-events-none absolute left-1/2 top-24 -z-10 h-72 w-72 -translate-x-1/2 rounded-full bg-orange-600/20 blur-3xl animate-slow-drift"
       />
-      {/* mouse-follow glow */}
+      {/* mouse-follow glow (desktop only — hidden on touch to avoid jank) */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -z-10 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl transition-[left,top] duration-300 ease-out"
+        className="pointer-events-none absolute -z-10 hidden h-64 w-64 rounded-full bg-orange-500/10 blur-3xl transition-[left,top] duration-300 ease-out sm:block"
         style={{ left: `${glow.x}%`, top: `${glow.y}%`, transform: "translate(-50%, -50%)" }}
       />
 
       <div className="mx-auto max-w-3xl">
-        <div className="mx-auto mb-6 inline-flex animate-float items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1 text-[12px] font-medium text-zinc-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Now shipping edge deploys
-        </div>
-
-        <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-          Build frontend{" "}
-          <span className="bg-gradient-to-r from-purple-400 to-emerald-400 bg-clip-text text-transparent">
-            before backend
-          </span>{" "}
-          exists.
+        <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
+          Stop waiting{" "}
+          <span className="bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent">
+            for the backend
+          </span>
+          .
         </h1>
 
         <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-relaxed text-zinc-400">
@@ -161,25 +202,27 @@ function Hero() {
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
             href="#get-started"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-purple-500 px-5 py-2.5 text-[14px] font-medium text-white shadow-[0_0_0_0_rgba(168,85,247,0.5)] transition-all hover:bg-purple-400 hover:shadow-[0_0_24px_4px_rgba(168,85,247,0.35)]"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-5 py-2.5 text-[14px] font-medium text-white transition-all hover:bg-orange-400 hover:shadow-[0_0_24px_4px_rgba(255,107,0,0.35)]"
           >
             Create your first endpoint
           </a>
-          <a
-            href="#docs"
+          <Link
+            to="/docs"
             className="inline-flex items-center gap-1.5 rounded-lg px-5 py-2.5 text-[14px] font-medium text-zinc-300 transition-colors hover:text-white"
           >
             View documentation
             <ArrowRight className="h-3.5 w-3.5" />
-          </a>
+          </Link>
         </div>
+
+        <HeroVisual />
       </div>
     </section>
   );
 }
 
 /* -------------------------------------------------------------------------
- * ProductExplainer.jsx — one-glance explanation right after the hero
+ * ProductExplainer.jsx
  * ---------------------------------------------------------------------- */
 function ProductExplainer() {
   return (
@@ -193,11 +236,11 @@ function ProductExplainer() {
 }
 
 /* -------------------------------------------------------------------------
- * HowItWorks.jsx — three-step horizontal flow
+ * HowItWorks.jsx
  * ---------------------------------------------------------------------- */
 function HowItWorks() {
   const steps = [
-    { icon: Route, title: "Create a route", body: "Define a path like /api/users." },
+    { icon: RouteIcon, title: "Create a route", body: "Define a path like /api/users." },
     { icon: FileJson, title: "Paste your response", body: "Drop in the JSON you want returned." },
     { icon: Send, title: "Start sending requests", body: "Your endpoint is live immediately." },
   ];
@@ -207,13 +250,13 @@ function HowItWorks() {
       <div className="mx-auto max-w-4xl text-center">
         <h2 className="text-2xl font-semibold tracking-tight text-white">Three steps. One endpoint.</h2>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+        <div className="mt-10 grid gap-8 sm:grid-cols-3 sm:gap-6">
           {steps.map(({ icon: Icon, title, body }, i) => (
-            <div key={title} className="relative flex flex-col items-center">
+            <div key={title} className="relative mx-auto flex max-w-[220px] flex-col items-center">
               {i < steps.length - 1 && (
                 <ChevronRight className="absolute -right-3 top-6 hidden h-5 w-5 text-zinc-700 sm:block" />
               )}
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/60 text-purple-400">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/60 text-orange-400">
                 <Icon className="h-5 w-5" />
               </div>
               <p className="mt-4 text-[14px] font-medium text-white">
@@ -230,7 +273,7 @@ function HowItWorks() {
 }
 
 /* -------------------------------------------------------------------------
- * InteractiveWidget.jsx — renamed panels, typing animation, URL shimmer
+ * InteractiveWidget.jsx — stacks on mobile, tighter padding, wrap-safe
  * ---------------------------------------------------------------------- */
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
@@ -290,7 +333,6 @@ function InteractiveWidget() {
     }
   }, [body]);
 
-  // type out the response body once the request "completes"
   useEffect(() => {
     if (requestState !== "done") return;
     const full = isValidBody ? body : "{}";
@@ -305,11 +347,11 @@ function InteractiveWidget() {
   }, [requestState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <section id="try-it" className="px-6 py-16">
-      <div className="mx-auto max-w-5xl rounded-2xl border border-zinc-800 bg-zinc-900/40 p-2 sm:p-3">
-        <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
+    <section id="try-it" className="px-4 py-16 sm:px-6">
+      <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40 p-2 sm:p-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
           {/* Left column — write response */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+          <div className="min-w-0 rounded-xl border border-zinc-800 bg-zinc-950 p-3 sm:p-4">
             <p className="mb-3 text-[12px] font-medium uppercase tracking-wider text-zinc-500">
               Write response
             </p>
@@ -319,7 +361,7 @@ function InteractiveWidget() {
                 <select
                   value={method}
                   disabled
-                  className="h-full appearance-none border-r border-zinc-800 bg-transparent py-2.5 pl-3 pr-8 text-[13px] font-bold text-purple-400 outline-none"
+                  className="h-full appearance-none border-r border-zinc-800 bg-transparent py-2.5 pl-3 pr-8 text-[13px] font-bold text-orange-400 outline-none"
                 >
                   <option value="GET">GET</option>
                 </select>
@@ -329,7 +371,7 @@ function InteractiveWidget() {
                 value={path}
                 onChange={(e) => setPath(e.target.value)}
                 placeholder="/api/v1/users"
-                className="flex-1 bg-transparent px-3 py-2.5 font-mono text-[13px] text-white outline-none placeholder:text-zinc-600"
+                className="min-w-0 flex-1 bg-transparent px-3 py-2.5 font-mono text-[13px] text-white outline-none placeholder:text-zinc-600"
               />
             </div>
 
@@ -345,20 +387,20 @@ function InteractiveWidget() {
                 onChange={(e) => setBody(e.target.value)}
                 spellCheck={false}
                 rows={5}
-                className="w-full resize-none bg-transparent px-3 py-2.5 font-mono text-[12.5px] leading-6 text-emerald-300 outline-none"
+                className="w-full resize-none overflow-x-auto bg-transparent px-3 py-2.5 font-mono text-[12.5px] leading-6 text-emerald-300 outline-none"
               />
             </div>
           </div>
 
           {/* Right column — live endpoint */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+          <div className="min-w-0 rounded-xl border border-zinc-800 bg-zinc-950 p-3 sm:p-4">
             <p className="mb-3 text-[12px] font-medium uppercase tracking-wider text-zinc-500">Live endpoint</p>
 
             <div
               key={shimmerKey}
-              className="flex items-center gap-2 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 py-1.5 pl-3 pr-1.5 animate-shimmer"
+              className="flex items-center gap-2 overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-900 py-1.5 pl-3 pr-1.5 animate-shimmer"
             >
-              <span className="flex-1 truncate font-mono text-[12.5px] text-zinc-200">{liveUrl}</span>
+              <span className="flex-1 break-all font-mono text-[12.5px] text-zinc-200">{liveUrl}</span>
               <CopyButton text={liveUrl} />
             </div>
 
@@ -368,14 +410,14 @@ function InteractiveWidget() {
                 <button
                   onClick={send}
                   disabled={requestState === "loading"}
-                  className="flex items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1 text-[11.5px] font-medium text-zinc-200 transition-colors hover:bg-zinc-700 disabled:opacity-60"
+                  className="flex shrink-0 items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1 text-[11.5px] font-medium text-zinc-200 transition-colors hover:bg-zinc-700 disabled:opacity-60"
                 >
                   <Play className="h-3 w-3" />
                   {requestState === "loading" ? "Sending..." : "Send live request"}
                 </button>
               </div>
 
-              <div className="min-h-[132px] p-3 font-mono text-[12px] leading-6">
+              <div className="min-h-[132px] overflow-x-auto p-3 font-mono text-[12px] leading-6">
                 {requestState === "idle" && (
                   <p className="text-zinc-600">
                     $ waiting to send request
@@ -384,18 +426,18 @@ function InteractiveWidget() {
                 )}
                 {requestState === "loading" && (
                   <p className="flex items-center gap-2 text-zinc-500">
-                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-700 border-t-emerald-400" />
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-700 border-t-orange-400" />
                     connecting to {liveUrl}...
                   </p>
                 )}
                 {requestState === "done" && (
                   <div>
                     <p>
-                      <span className="text-emerald-400">HTTP/1.1 200</span>
+                      <span className="text-orange-400">HTTP/1.1 200</span>
                       <span className="text-zinc-500"> OK</span>
                     </p>
                     <p className="text-zinc-500">content-type: application/json</p>
-                    <pre className="mt-2 whitespace-pre-wrap text-zinc-200">
+                    <pre className="mt-2 whitespace-pre-wrap break-words text-zinc-200">
                       {typedBody}
                       <span className="animate-pulse">▍</span>
                     </pre>
@@ -411,7 +453,7 @@ function InteractiveWidget() {
 }
 
 /* -------------------------------------------------------------------------
- * Benefits.jsx — bento layout, benefit-focused titles, card lift on hover
+ * Benefits.jsx
  * ---------------------------------------------------------------------- */
 function Benefits() {
   const features = [
@@ -443,14 +485,14 @@ function Benefits() {
           Everything you need to stop blocking on a backend that isn't ready yet.
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {features.map(({ icon: Icon, title, body, span }) => (
             <div
               key={title}
-              className={`rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-zinc-700 hover:shadow-lg hover:shadow-black/40 ${span}`}
+              className={`rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-lg hover:shadow-black/40 ${span}`}
             >
-              <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10">
-                <Icon className="h-4.5 w-4.5 text-purple-400" />
+              <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/10">
+                <Icon className="h-4.5 w-4.5 text-orange-400" />
               </div>
               <h3 className="text-[15px] font-medium text-white">{title}</h3>
               <p className="mt-1.5 text-[13.5px] leading-relaxed text-zinc-400">{body}</p>
@@ -463,7 +505,7 @@ function Benefits() {
 }
 
 /* -------------------------------------------------------------------------
- * Integrations.jsx — trust signals via framework chips
+ * Integrations.jsx
  * ---------------------------------------------------------------------- */
 function Integrations() {
   const frameworks = ["React", "Next.js", "Vue", "Angular", "Flutter", "React Native"];
@@ -475,7 +517,7 @@ function Integrations() {
           {frameworks.map((name) => (
             <span
               key={name}
-              className="rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200"
+              className="rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-orange-500/30 hover:text-zinc-200"
             >
               {name}
             </span>
@@ -523,13 +565,13 @@ function Pricing() {
         <h2 className="text-2xl font-semibold tracking-tight text-white">Simple, developer-friendly pricing</h2>
         <p className="mt-2 text-[14px] text-zinc-400">Start free. Upgrade when your team needs more.</p>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {tiers.map((tier) => (
             <div
               key={tier.name}
               className={`rounded-xl border p-6 text-left transition-all duration-200 hover:-translate-y-1 ${
                 tier.highlight
-                  ? "border-purple-500/50 bg-purple-500/5 shadow-lg shadow-purple-500/10"
+                  ? "border-orange-500/50 bg-orange-500/5 shadow-lg shadow-orange-500/10"
                   : "border-zinc-800 bg-zinc-900/40"
               }`}
             >
@@ -542,7 +584,7 @@ function Pricing() {
               <ul className="mt-5 space-y-2.5">
                 {tier.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-[13px] text-zinc-400">
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-400" />
                     {f}
                   </li>
                 ))}
@@ -551,7 +593,7 @@ function Pricing() {
               <button
                 className={`mt-6 w-full rounded-lg px-4 py-2 text-[13.5px] font-medium transition-colors ${
                   tier.highlight
-                    ? "bg-purple-500 text-white hover:bg-purple-400"
+                    ? "bg-orange-500 text-white hover:bg-orange-400"
                     : "border border-zinc-700 text-zinc-200 hover:bg-zinc-800"
                 }`}
               >
@@ -566,12 +608,12 @@ function Pricing() {
 }
 
 /* -------------------------------------------------------------------------
- * FAQ.jsx — simple accordion
+ * FAQ.jsx — hardened centering for mobile
  * ---------------------------------------------------------------------- */
 function FAQItem({ q, a, isOpen, onToggle }) {
   return (
-    <div className="border-b border-zinc-800 py-4">
-      <button onClick={onToggle} className="flex w-full items-center justify-between text-left">
+    <div className="w-full border-b border-zinc-800 py-4">
+      <button onClick={onToggle} className="flex w-full items-center justify-between gap-4 text-left">
         <span className="text-[14px] font-medium text-white">{q}</span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
@@ -602,10 +644,10 @@ function FAQ() {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <section className="px-6 py-16">
-      <div className="mx-auto max-w-2xl">
-        <h2 className="text-center text-2xl font-semibold tracking-tight text-white">Frequently asked questions</h2>
-        <div className="mt-8">
+    <section className="flex justify-center px-6 py-16">
+      <div className="mx-auto w-full max-w-2xl text-center">
+        <h2 className="text-2xl font-semibold tracking-tight text-white">Frequently asked questions</h2>
+        <div className="mx-auto mt-8 flex w-full flex-col items-center">
           {faqs.map((faq, i) => (
             <FAQItem
               key={faq.q}
@@ -628,7 +670,7 @@ function FinalCTA() {
   return (
     <section className="px-6 py-20">
       <div className="mx-auto max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-900/40 p-10 text-center">
-        <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-black px-4 py-2 font-mono text-[13px] text-emerald-400">
+        <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-black px-4 py-2 font-mono text-[13px] text-orange-400">
           <Terminal className="h-3.5 w-3.5 text-zinc-500" />
           npm install -g mockless-cli
         </div>
@@ -640,7 +682,7 @@ function FinalCTA() {
 
         <a
           href="#get-started"
-          className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-purple-500 px-5 py-2.5 text-[14px] font-medium text-white shadow-[0_0_0_0_rgba(168,85,247,0.5)] transition-all hover:bg-purple-400 hover:shadow-[0_0_24px_4px_rgba(168,85,247,0.35)]"
+          className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-5 py-2.5 text-[14px] font-medium text-white transition-all hover:bg-orange-400 hover:shadow-[0_0_24px_4px_rgba(255,107,0,0.35)]"
         >
           Create your first mock API
           <ArrowRight className="h-3.5 w-3.5" />
@@ -651,47 +693,49 @@ function FinalCTA() {
 }
 
 /* -------------------------------------------------------------------------
- * Footer.jsx — expanded columns
+ * Footer.jsx — fully stacked on mobile, 44px tap targets, social row
  * ---------------------------------------------------------------------- */
 function Footer() {
   const columns = [
-    { title: "Product", links: ["Features", "Pricing", "Docs", "Blog"] },
-    { title: "Resources", links: ["Changelog", "Status", "Roadmap", "GitHub"] },
-    { title: "Legal", links: ["Privacy", "Terms"] },
+    { title: "Product", links: [{ label: "Features", href: "#features" }, { label: "Pricing", href: "#pricing" }, { label: "Docs", to: "/docs" }, { label: "Blog", href: "#blog" }] },
+    { title: "Resources", links: [{ label: "Changelog", to: "/changelog" }, { label: "Status", href: "#status" }, { label: "Roadmap", href: "#roadmap" }, { label: "GitHub", href: "#github" }] },
+    { title: "Legal", links: [{ label: "Privacy", href: "#privacy" }, { label: "Terms", href: "#terms" }] },
   ];
+
+  const LinkItem = ({ link }) =>
+    link.to ? (
+      <Link to={link.to} className="flex min-h-[44px] items-center text-[13px] text-zinc-400 hover:text-zinc-200">
+        {link.label}
+      </Link>
+    ) : (
+      <a href={link.href} className="flex min-h-[44px] items-center text-[13px] text-zinc-400 hover:text-zinc-200">
+        {link.label}
+      </a>
+    );
 
   return (
     <footer className="border-t border-zinc-800 px-6 pb-10 pt-14">
       <div className="mx-auto max-w-5xl">
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-purple-500">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-4">
+          <div className="min-h-[44px]">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-orange-500">
                 <Terminal className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
               </div>
               <span className="text-[14px] font-semibold text-white">Mockless</span>
-            </div>
+            </Link>
             <p className="mt-3 text-[12.5px] leading-relaxed text-zinc-500">
               Hosted mock APIs for frontend teams who don't want to wait.
             </p>
-            <a
-              href="#github"
-              className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] text-zinc-500 hover:text-zinc-300"
-            >
-              <Github className="h-3.5 w-3.5" />
-              GitHub
-            </a>
           </div>
 
           {columns.map((col) => (
             <div key={col.title}>
               <p className="text-[12px] font-medium uppercase tracking-wider text-zinc-500">{col.title}</p>
-              <ul className="mt-3 space-y-2">
+              <ul className="mt-2">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href={`#${link.toLowerCase()}`} className="text-[13px] text-zinc-400 hover:text-zinc-200">
-                      {link}
-                    </a>
+                  <li key={link.label}>
+                    <LinkItem link={link} />
                   </li>
                 ))}
               </ul>
@@ -699,7 +743,25 @@ function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 border-t border-zinc-800 pt-6 text-center text-[12.5px] text-zinc-600">
+        {/* social icons — always shown, most prominent as a standalone row on mobile */}
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <a
+            href="#github"
+            aria-label="Mockless on GitHub"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-white"
+          >
+            <Github className="h-4.5 w-4.5" />
+          </a>
+          <a
+            href="#contact"
+            aria-label="Contact Mockless"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-white"
+          >
+            <Mail className="h-4.5 w-4.5" />
+          </a>
+        </div>
+
+        <div className="mt-8 border-t border-zinc-800 pt-6 text-center text-[12.5px] text-zinc-600">
           © {new Date().getFullYear()} Mockless. Built for developers who don't want to wait.
         </div>
       </div>
@@ -708,13 +770,11 @@ function Footer() {
 }
 
 /* -------------------------------------------------------------------------
- * App.jsx — top-level assembly
- * Page order: Hero → Explainer → How It Works → Interactive Demo →
- *             Benefits → Integrations → Pricing → FAQ → Final CTA → Footer
+ * LandingPage.jsx — assembles all landing sections
  * ---------------------------------------------------------------------- */
-export default function App() {
+function LandingPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+    <>
       <Navbar />
       <Hero />
       <ProductExplainer />
@@ -726,6 +786,21 @@ export default function App() {
       <FAQ />
       <FinalCTA />
       <Footer />
+    </>
+  );
+}
+
+/* -------------------------------------------------------------------------
+ * App.jsx — top-level routing
+ * ---------------------------------------------------------------------- */
+export default function App() {
+  return (
+    <div className="min-h-screen w-full overflow-x-hidden bg-zinc-950 text-zinc-100 antialiased">
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/docs" element={<DocsPage />} />
+        <Route path="/changelog" element={<ChangelogPage />} />
+      </Routes>
     </div>
   );
 }
